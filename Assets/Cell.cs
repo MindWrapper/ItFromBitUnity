@@ -1,8 +1,8 @@
 ﻿namespace ItFromBit.Rules
 {
-	public class Cell2D
+	public class Cell
 	{
-		public Cell2D(string state)
+		public Cell(string state)
 		{
 			State = state.FromString();
 		}

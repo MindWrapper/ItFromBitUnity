@@ -12,12 +12,12 @@ namespace ItFromBit.Rules
 	{
 		public static CellState FromString (this string state)
 		{
-			if (state == "A")
+			if (state == "A" || state == "1")
 			{
 				return CellState.Alive;
 			}
 
-			if (state == "D")
+			if (state == "D" || state == "0")
 			{
 				return CellState.Dead;
 			}

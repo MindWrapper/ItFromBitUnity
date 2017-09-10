@@ -1,85 +1,60 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using NUnit.Framework;
 
 namespace ItFromBit.Rules.Tests
 {
-	[TestFixture]
-	public class RuleDefinitionTests
-	{
-		[Test]
-		public void Apply_Rule0_ReturnsZerroForAllCombinations ()
-		{
-			var rule = new Rule2D ("0");
-			Assert.That (rule.Apply (1), Is.EqualTo (0));
-			Assert.That (rule.Apply (0), Is.EqualTo (0));
-		}
+    [TestFixture]
+    public class RuleDefinitionTests
+    {
+        // First and last cells are always dead, alorithm
+        // operates only on 'middile' cells
+        [Test]
+        [TestCase("0", "AAA", "DDD")]
+        [TestCase("0", "AAAAAA", "DDDDDD")]
+        [TestCase("1", "DDDD", "DAAD")]
+        [TestCase("10", "DDD", "DDD")]
+        [TestCase("10010", "DADDD", "DDADD")] // Rule18
+        [TestCase("10010", "DDDAD", "DDADD")] // Rule18
+        public void AppliesSelectedRulesCorrectly(string ruleDef, string cellDefs, string expectedCellDefs)
+        {
+            var resultCellDefs = Apply(new Rule(ruleDef), MakeCells(cellDefs));
+            Assert.That(resultCellDefs, Is.EqualTo(expectedCellDefs));
+        }
 
-		[Test]
-		public void Apply_Rule1_ReturnsOneOnlyforZerro ()
-		{
-			var rule = new Rule2D ("1");
-			Assert.That (rule.Apply (0), Is.EqualTo (1));
-			Assert.That (rule.Apply (1), Is.EqualTo (0));
-		}
+        private static string Apply(Rule r, IEnumerable<Cell> cells)
+        {
+            return MakeDefinition(r.NextGeneration(cells));
+        }
 
-		[Test]
-		public void Apply_Rule2_ReturnsOneOnlyforOne ()
-		{
-			var rule = new Rule2D ("10");
-			Assert.That (rule.Apply (0), Is.EqualTo (0));
-			Assert.That (rule.Apply (1), Is.EqualTo (1));
-			Assert.That (rule.Apply (2), Is.EqualTo (0));
-			Assert.That (rule.Apply (3), Is.EqualTo (0));
-		}
+        private static IEnumerable<Cell> MakeCells(string definition)
+        {
+            return definition.Select(c => new Cell(c.ToString())).ToList();
+        }
 
-		[Test]
-		public void Apply_Rule3_ReturnsOneForOneAndTwo ()
-		{
-			var rule = new Rule2D ("11");
-			Assert.That (rule.Apply (0), Is.EqualTo (1));
-			Assert.That (rule.Apply (1), Is.EqualTo (1));
-			Assert.That (rule.Apply (2), Is.EqualTo (0));
-			Assert.That (rule.Apply (3), Is.EqualTo (0));
-		}
+        private static string MakeDefinition(IEnumerable<Cell> cells)
+        {
+            var res = new StringBuilder();
+            foreach (var c in cells)
+            {
+                if (c.State == CellState.Alive)
+                {
+                    res.Append("A");
+                    continue;
+                }
 
-		[Test]
-		public void Apply_Rule4_ReturnsOneTwo ()
-		{
-			var rule = new Rule2D ("100");
-			Assert.That (rule.Apply (0), Is.EqualTo (0));
-			Assert.That (rule.Apply (1), Is.EqualTo (0));
-			Assert.That (rule.Apply (2), Is.EqualTo (1));
-			Assert.That (rule.Apply (3), Is.EqualTo (0));
-		}
+                if (c.State == CellState.Dead)
+                {
+                    res.Append("D");
+                    continue;
+                }
 
-		[Test]
-		public void Apply_Rule5_ReturnsFor3And1 ()
-		{
-			var rule = new Rule2D ("101");
-			Assert.That (rule.Apply (0), Is.EqualTo (1));
-			Assert.That (rule.Apply (1), Is.EqualTo (0));
-			Assert.That (rule.Apply (2), Is.EqualTo (1));
-			Assert.That (rule.Apply (3), Is.EqualTo (0));
-		}
+                throw new Exception("Invalid cell state " + c.State);
+            }
 
-
-		[Test]
-		public void Apply_Rule255_ReturnsFor3And1 ()
-		{
-			var rule = new Rule2D ("11111111");
-			Assert.That (rule.Apply (0), Is.EqualTo (1));
-			Assert.That (rule.Apply (1), Is.EqualTo (1));
-			Assert.That (rule.Apply (2), Is.EqualTo (1));
-			Assert.That (rule.Apply (3), Is.EqualTo (1));
-			Assert.That (rule.Apply (4), Is.EqualTo (1));
-			Assert.That (rule.Apply (5), Is.EqualTo (1));
-			Assert.That (rule.Apply (6), Is.EqualTo (1));
-			Assert.That (rule.Apply (7), Is.EqualTo (1));
-		}
-
-		private int ToInt(string rule)
-		{
-			return Convert.ToInt32(rule, 2);
-		}
-	}
+            return res.ToString();
+        }
+    }
 }
